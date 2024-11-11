@@ -34,7 +34,7 @@ class KeyManagement:
         def basis(j):
             return reduce(lambda acc, m: acc * (x - points[m][0]) / (points[j][0] - points[m][0]),[m for m in range(len(points)) if m != j], 1)
         return round(sum(points[j][1] * basis(j) for j in range(len(points))))
-    ``
+    
 
 # Initialize Key Management with 5 shards and threshold of 3
 threshold =3
