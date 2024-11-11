@@ -19,11 +19,13 @@ class BlockchainNetwork:
         # Placeholder for broadcasting to the blockchain
         print(f"Broadcasting transaction to blockchain: {signed_transaction}")
 # Initialize blockchain network and transaction processing
-blockchain_network = BlockchainNetwork()
-transaction_processing = TransactionProcessing(blockchain_network)
 
-# Sample transaction data
-transaction_data = "Transfer 100 tokens to address XYZ"
+def transaction_init(reconstructed_key):
+    blockchain_network = BlockchainNetwork()
+    transaction_processing = TransactionProcessing(blockchain_network)
 
-# Assume the key has already been reconstructed
-transaction_processing.initiate_transaction(transaction_data, reconstructed_key)
+    # Sample transaction data
+    transaction_data = "Transfer 100 tokens to address XYZ"
+
+    # Assume the key has already been reconstructed
+    transaction_processing.initiate_transaction(transaction_data, reconstructed_key)
