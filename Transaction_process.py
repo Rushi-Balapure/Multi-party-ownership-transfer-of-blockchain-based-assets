@@ -1,3 +1,4 @@
+import Key_management
 class TransactionProcessing:
     def __init__(self, blockchain_network):
         self.blockchain_network = blockchain_network  # Blockchain instance or API to interact with the blockchain
@@ -20,12 +21,22 @@ class BlockchainNetwork:
         print(f"Broadcasting transaction to blockchain: {signed_transaction}")
 # Initialize blockchain network and transaction processing
 
-def transaction_init(reconstructed_key="demo"):
+def transaction_init():
     blockchain_network = BlockchainNetwork()
     transaction_processing = TransactionProcessing(blockchain_network)
 
     # Sample transaction data
     transaction_data = "Transfer 100 tokens to address XYZ"
+    num_shards = 3
+    key_management = Key_management.KeyManagement(num_shards)
+    secret_key_hex = "ABD3410FE"  # Example secret key in hex format
 
+# Generate shards
+    shards = key_management.generate_key_shards(secret_key_hex)
+    # print("Generated Shards:", shards)
+
+# Use all generated shards for reconstruction
+    reconstructed_key = key_management.reconstruct_key(shards)
     # Assume the key has already been reconstructed
     transaction_processing.initiate_transaction(transaction_data, reconstructed_key)
+transaction_init()

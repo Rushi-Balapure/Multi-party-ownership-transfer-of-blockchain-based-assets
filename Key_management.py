@@ -50,19 +50,19 @@ class KeyManagement:
         
         # Sum up basis polynomial times y-coordinates
         return sum((points[j][1] * basis(j)) % self.prime_modulus for j in range(len(points))) % self.prime_modulus
+def key_init():
+    # Initialize Key Management with all shards being required
+    num_shards = 3
+    key_management = KeyManagement(num_shards)
+    secret_key_hex = "ABD3410FE"  # Example secret key in hex format
 
-# Initialize Key Management with all shards being required
-num_shards = 3
-key_management = KeyManagement(num_shards)
-secret_key_hex = "ABD3410FE"  # Example secret key in hex format
+    # Generate shards
+    shards = key_management.generate_key_shards(secret_key_hex)
+    print("Generated Shards:", shards)
 
-# Generate shards
-shards = key_management.generate_key_shards(secret_key_hex)
-print("Generated Shards:", shards)
+    # Use all generated shards for reconstruction
+    reconstructed_key_hex = key_management.reconstruct_key(shards)
+    print("Reconstructed Key (Hex):", reconstructed_key_hex)
 
-# Use all generated shards for reconstruction
-reconstructed_key_hex = key_management.reconstruct_key(shards)
-print("Reconstructed Key (Hex):", reconstructed_key_hex)
-
-# Destroy the key securely
-key_management.destroy_key()
+    # Destroy the key securely
+    key_management.destroy_key()
