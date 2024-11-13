@@ -1,55 +1,68 @@
 import random
 from functools import reduce
-from cryptography.hazmat.primitives import hashes
 
 class KeyManagement:
-    def __init__(self, num_shards=5, threshold=3):
+    def __init__(self, num_shards, prime_modulus=2**137 - 1):
         self.num_shards = num_shards
-        self.threshold = threshold
+        self.prime_modulus = prime_modulus  # Use a large prime modulus for secure modular arithmetic
         self.shards = []
 
-    def generate_key_shards(self, secret_key):
-        secret_int = int.from_bytes(secret_key.encode(), 'big')
-        coeffs = [secret_int] + [random.SystemRandom().randint(0, 2**128) for _ in range(self.threshold - 1)]
+    def generate_key_shards(self, secret_key_hex):
+        # Convert hex key to an integer
+        secret_int = int(secret_key_hex, 16)
+        
+        # Generate random coefficients for polynomial with modular arithmetic
+        coeffs = [secret_int] + [random.SystemRandom().randint(0, self.prime_modulus - 1) for _ in range(self.num_shards - 1)]
+        
+        # Evaluate polynomial for each shard using modular arithmetic
         self.shards = [(i, self._evaluate_polynomial(coeffs, i)) for i in range(1, self.num_shards + 1)]
-        print(f"Generated {len(self.shards)} shards with threshold {self.threshold}.")
+        print(f"Generated {len(self.shards)} shards.")
         return self.shards
 
     def reconstruct_key(self, selected_shards):
-        if len(selected_shards) < self.threshold:
-            raise ValueError("Insufficient shards to reconstruct the key.")
+        # Use all provided shards to reconstruct the key, no threshold condition
         secret_int = self._lagrange_interpolation(0, selected_shards)
-        secret_key = secret_int.to_bytes((secret_int.bit_length() + 7) // 8, 'big').decode()
+        
+        # Convert integer back to hex
+        secret_key_hex = hex(secret_int)[2:]  # Removing '0x' prefix
         print("Key successfully reconstructed.")
-        return secret_key
+        return secret_key_hex
 
     def destroy_key(self):
         self.shards = []
         print("Key shards securely destroyed.")
 
     def _evaluate_polynomial(self, coeffs, x):
-        return sum([c * (x ** i) for i, c in enumerate(coeffs)])
+        # Evaluates the polynomial at x using modular arithmetic
+        return sum([(c * pow(x, i, self.prime_modulus)) % self.prime_modulus for i, c in enumerate(coeffs)]) % self.prime_modulus
 
     def _lagrange_interpolation(self, x, points):
+        # Lagrange interpolation to reconstruct the key using modular arithmetic
         def basis(j):
-            return reduce(lambda acc, m: acc * (x - points[m][0]) / (points[j][0] - points[m][0]),[m for m in range(len(points)) if m != j], 1)
-        return round(sum(points[j][1] * basis(j) for j in range(len(points))))
-    
+            numerator, denominator = 1, 1
+            for m in range(len(points)):
+                if m != j:
+                    # Modular multiplication for numerator and denominator
+                    numerator = (numerator * (x - points[m][0])) % self.prime_modulus
+                    denominator = (denominator * (points[j][0] - points[m][0])) % self.prime_modulus
+            # Compute modular inverse of denominator
+            return numerator * pow(denominator, -1, self.prime_modulus) % self.prime_modulus
+        
+        # Sum up basis polynomial times y-coordinates
+        return sum((points[j][1] * basis(j)) % self.prime_modulus for j in range(len(points))) % self.prime_modulus
 
-# Initialize Key Management with 5 shards and threshold of 3
-threshold =3
-num_shards=5
-key_management = KeyManagement(num_shards, threshold)
-secret_key = "super_secret_key_value"  # This would be a cryptographic key in a real implementation
+# Initialize Key Management with all shards being required
+num_shards = 3
+key_management = KeyManagement(num_shards)
+secret_key_hex = "ABD3410FE"  # Example secret key in hex format
 
 # Generate shards
-shards = key_management.generate_key_shards(secret_key)
+shards = key_management.generate_key_shards(secret_key_hex)
 print("Generated Shards:", shards)
 
-# Select any 3 shards for reconstruction
-selected_shards = shards[:threshold]  # For demonstration, we select the first 3 shards
-reconstructed_key = key_management.reconstruct_key(selected_shards)
-print("Reconstructed Key:", reconstructed_key)
+# Use all generated shards for reconstruction
+reconstructed_key_hex = key_management.reconstruct_key(shards)
+print("Reconstructed Key (Hex):", reconstructed_key_hex)
 
 # Destroy the key securely
 key_management.destroy_key()

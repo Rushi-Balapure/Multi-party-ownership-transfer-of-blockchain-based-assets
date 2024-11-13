@@ -20,7 +20,7 @@ class BlockchainNetwork:
         print(f"Broadcasting transaction to blockchain: {signed_transaction}")
 # Initialize blockchain network and transaction processing
 
-def transaction_init(reconstructed_key):
+def transaction_init(reconstructed_key="demo"):
     blockchain_network = BlockchainNetwork()
     transaction_processing = TransactionProcessing(blockchain_network)
 
