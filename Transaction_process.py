@@ -43,4 +43,4 @@ def transaction_init():
     reconstructed_key = key_management.reconstruct_key(shards)
     # Assume the key has already been reconstructed
     transaction_processing.initiate_transaction(transaction_data, "0x"+reconstructed_key)
-transaction_init()
+# transaction_init()
